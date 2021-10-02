@@ -1,42 +1,46 @@
 # NGINX WebDAV container
 
-Build:
+## Build
 ```bash
 docker build . -t mookkiah/webdav
 ```
 
-Usage:
+## Usage:
 
 Without external volume
 ```bash
-docker run --restart always --detach --name webdav --publish 7000:8080 \
-           --env UID=$UID  mookkiah/webdav
+docker run --detach --name webdav --publish 7000:8080 mookkiah/webdav
 ```
 
-Without external(host) volume
+
+
+
+
+With external(host) volume
 ```bash
 docker run --restart always --detach --name webdav --publish 7000:8080 \
            --env UID=$UID --volume $PWD:/media mookkiah/webdav
 ```
 
+## Securing WebDav
 Optionally you can add two environment variables to require HTTP basic authentication:
 
 * WEBDAV_USERNAME
 * WEBDAV_PASSWORD
 
-Example:
+### Example:
 
 ```bash
 docker run --restart always --detach --name webdav --publish 7000:8080 \
-           --env WEBDAV_USERNAME=myuser --env WEBDAV_PASSWORD=mypassword \
+           --env WEBDAV_USERNAME=webdav --env WEBDAV_PASSWORD=S0m37h1n6C0mp13x \
            --env UID=$UID --volume $PWD:/media mookkiah/webdav
 ```
 
-Kubernetes Deployment and Services:
+## Kubernetes Deployment and Services:
 
-```
-
-# kubectl create deployment nginx-webdav --image=ionelmc/webdav --dry-run -oyaml
+Store below file in file webdav.yaml and apply using `kubectl apply -f webdav.yaml`
+```yaml
+# kubectl create deployment nginx-webdav --image=mookkiah/webdav --dry-run -oyaml
 
 apiVersion: apps/v1
 kind: Deployment
@@ -83,4 +87,43 @@ spec:
     app: nginx-webdav
   type: LoadBalancer
 
+```
+
+To check access
+```
+curl http://localhost:7000
+```
+with authentication
+```
+curl -u webdav:S0m37h1n6C0mp13x http://localhost:7000
+```
+
+### To create a folder
+```
+curl -X MKCOL -u webdav:S0m37h1n6C0mp13x http://localhost:7000/home/
+```
+### To upload a file
+```
+curl -u webdav:S0m37h1n6C0mp13x -T webdav.yaml http://localhost:7000/home/webdav.yaml
+```
+### To delete a folder
+```
+curl -X DELETE -u webdav:S0m37h1n6C0mp13x http://localhost:7000/home/webdav.yaml
+```
+### To delete a file 
+```
+curl -X DELETE -u webdav:S0m37h1n6C0mp13x http://localhost:7000/home
+```
+
+## Cleanup
+
+Docker
+```bash
+docker stop webdav
+docker rm webdav
+```
+
+Kubernetes
+```
+kubernetes delete -f webdav.yaml
 ```

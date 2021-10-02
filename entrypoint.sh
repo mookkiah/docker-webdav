@@ -11,9 +11,11 @@ fi
 if [ -n "${UID:-}" ]; then
     chmod go+w /dev/stderr /dev/stdout
     gosu $UID mkdir -p /media/.tmp
+    ls -ltra /media
     exec gosu $UID "$@"
 else
     mkdir -p /media/.tmp
+    ls -ltra /media
     exec "$@"
 fi
-ls -ltra /media
+
