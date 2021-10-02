@@ -1,5 +1,5 @@
 #!/bin/sh -eux
-
+id
 if [ -n "${WEBDAV_USERNAME:-}" ] && [ -n "${WEBDAV_PASSWORD:-}" ]; then
     htpasswd -cb /etc/nginx/webdavpasswd $WEBDAV_USERNAME $WEBDAV_PASSWORD
 else
@@ -16,3 +16,4 @@ else
     mkdir -p /media/.tmp
     exec "$@"
 fi
+ls -ltra /media
