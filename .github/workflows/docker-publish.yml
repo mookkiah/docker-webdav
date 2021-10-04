@@ -66,9 +66,11 @@ jobs:
       - name: Get Image SHA for git tagging
         id: get-sha
         uses: actions/github-script@v5
+        env:
+          DIGEST: ${{ steps.docker-build.outputs.digest }}
         with:
           script: |
-            const sha = steps.docker-build.outputs.digest.split(':')[1]
+            const sha = process.env.DIGEST.split(':')[1]
             core.setOutput('sha', sha)
 
       - name: Git Tag with image SHA
