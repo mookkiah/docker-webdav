@@ -9,7 +9,7 @@ docker build . -t mookkiah/docker-webdav
 
 Without external volume
 ```bash
-docker run --detach --name webdav --publish 7000:8080 mookkiah/docker-webdav
+docker run --detach --name webdav --publish 7000:8080  --env UID=0 mookkiah/docker-webdav
 ```
 
 With external(host) volume
@@ -31,12 +31,28 @@ docker run --restart always --detach --name webdav --publish 7000:8080 \
            --env WEBDAV_USERNAME=webdav --env WEBDAV_PASSWORD=S0m37h1n6C0mp13x \
            --env UID=$UID --volume $PWD:/media mookkiah/docker-webdav
 ```
+## Debugging
+To see the log
+```bash
+docker logs webdav
+```
+
+To get into the container
+```
+docker exec -it webdav /bin/sh
+```
+
+To see the list of a directory (ex: /media)
+```
+docker exec -it webdav ls -ltra /media
+```
+
 
 ## Kubernetes Deployment and Services:
 
 Store below file in file webdav.yaml and apply using `kubectl apply -f webdav.yaml`
 ```yaml
-# kubectl create deployment nginx-webdav --image=mookkiah/webdav --dry-run -oyaml
+# kubectl create deployment nginx-webdav --image=mookkiah/docker-webdav --dry-run -oyaml
 
 apiVersion: apps/v1
 kind: Deployment
@@ -100,11 +116,11 @@ curl -X MKCOL -u webdav:S0m37h1n6C0mp13x http://localhost:7000/home/
 ```
 ### To upload a file
 ```
-curl -u webdav:S0m37h1n6C0mp13x -T webdav.yaml http://localhost:7000/webdav.yaml
+curl -u webdav:S0m37h1n6C0mp13x -T README.md http://localhost:7000/README.md
 ```
 ### To delete a folder
 ```
-curl -X DELETE -u webdav:S0m37h1n6C0mp13x http://localhost:7000/home/webdav.yaml
+curl -X DELETE -u webdav:S0m37h1n6C0mp13x http://localhost:7000/home/README.md
 ```
 ### To delete a file 
 ```
@@ -126,7 +142,16 @@ kubernetes delete -f webdav.yaml
 
 ## Note:
 If you get internal server error while making changes via webdav
-Try execute below command to confirm if this is permission issue.
+This normally happens when the UID parameter not given permission to access to the storage file system
+Try (only in development) execute below command to confirm if this is permission issue.
+
+Docker
+```
+ docker exec -it webdav chmod +777 /media -R
+```
+
+Kubernetes
 ```
 kubectl exec -it <pod name>  -- chmod +777 /media -R
-`` 
+```
+
