@@ -62,8 +62,17 @@ jobs:
           push: ${{ github.event_name != 'pull_request' }}
           tags: ${{ steps.meta.outputs.tags }}
           labels: ${{ steps.meta.outputs.labels }}
+
+      - name: Get Image SHA for git tagging
+        id: get-sha
+        uses: actions/github-script@v5
+        with:
+          script: |
+            const sha = steps.docker-build.outputs.digest.split(':')[1]
+            core.setOutput('sha', sha)
+
       - name: Git Tag with image SHA
         uses: tvdias/github-tagger@v0.0.1
         with:
           repo-token: ${{ secrets.GITHUB_TOKEN }}
-          tag: ${{ steps.docker-build.outputs.digest }}
+          tag: ${{ steps.get-sha.outputs.sha }} 
